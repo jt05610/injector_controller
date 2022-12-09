@@ -1,9 +1,9 @@
 /**
   ******************************************************************************
-  * @file   redis_pubsub.c
+  * @file   redis_client.c
   * @author Jonathan Taylor
   * @date   12/6/22
-  * @brief  DESCRIPTION
+  * @brief  Code for configuring and running asynchronous redis client.
   ******************************************************************************
   * @attention
   *
@@ -20,12 +20,13 @@
 
 typedef struct redis_client_t
 {
-    RedisPub publisher;
-    RedisSub subscriber;
-    EventBase      eb;
+    RedisPub  publisher;
+    RedisSub  subscriber;
+    EventBase eb;
 } redis_client_t;
 
-RedisClient redis_client_create(size_t n_subs)
+RedisClient
+redis_client_create(size_t n_subs)
 {
     RedisClient base = calloc(1, sizeof(redis_client_t));
     base->publisher  = redis_pub_create();
@@ -62,17 +63,10 @@ redis_client_new_sub(RedisClient base, char * channel, r_cb_t callback)
     redis_sub_add(base->subscriber, channel, callback);
 }
 
-static inline void
-_attach(RedisClient base)
-{
-
-    redis_sub_attach(base->subscriber, base->eb);
-    redis_pub_attach(base->publisher, base->eb);
-}
 void
 redis_client_run(RedisClient base)
 {
-    _attach(base);
+    redis_client_attach(base);
     redis_subscribe(base->subscriber);
     event_base_dispatch(base->eb);
 }
@@ -80,7 +74,9 @@ redis_client_run(RedisClient base)
 void
 redis_client_attach(RedisClient base)
 {
-    _attach(base);
+    redis_sub_attach(base->subscriber, base->eb);
+    redis_pub_attach(base->publisher, base->eb);
+
 }
 
 void

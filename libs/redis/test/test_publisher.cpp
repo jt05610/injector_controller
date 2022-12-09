@@ -1,9 +1,9 @@
 /**
   ******************************************************************************
-  * @file   test_redis_publisher.cpp
+  * @file   test_publisher.cpp
   * @author Jonathan Taylor
   * @date   12/6/22
-  * @brief  DESCRIPTION
+  * @brief  GTests for testing redis publisher.
   ******************************************************************************
   * @attention
   *
@@ -16,7 +16,6 @@
 #include <gtest/gtest.h>
 #include "publisher.h"
 #include "subscriber.h"
-
 
 static char * expected;
 static bool passed;
@@ -54,8 +53,10 @@ protected:
     {
         while (max_iter)
         {
-            if(passed)
+            if (passed)
+            {
                 break;
+            }
             event_base_loop(eb, EVLOOP_NONBLOCK);
             max_iter--;
         }
@@ -66,16 +67,14 @@ protected:
     RedisSub  subscriber;
 };
 
-
 TEST_F(RedisPublisherTest, publish)
 {
     const char * msg = "test_msg";
-    expect((char*) msg);
+    expect((char *) msg);
     redis_publish(publisher, "pub_test", (char *) msg);
     run_loops(100);
     ASSERT_TRUE(passed);
 }
-
 
 static void
 pub_test_cb(redisAsyncContext * c, void * reply, void * privdata)
@@ -90,8 +89,9 @@ pub_test_cb(redisAsyncContext * c, void * reply, void * privdata)
     char * msg = rpl->element[2]->str;
     if (msg != NULL)
     {
-        if(strcmp(expected, msg) == 0)
+        if (strcmp(expected, msg) == 0)
+        {
             passed = true;
+        }
     }
 }
-

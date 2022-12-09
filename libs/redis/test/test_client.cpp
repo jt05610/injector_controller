@@ -3,7 +3,7 @@
   * @file   test_client.cpp
   * @author Jonathan Taylor
   * @date   12/7/22
-  * @brief  DESCRIPTION
+  * @brief  GTests for redis client
   ******************************************************************************
   * @attention
   *
@@ -14,10 +14,7 @@
   */
 
 #include <gtest/gtest.h>
-
 #include "redis_client.h"
-
-#include "fixtures.h"
 #include "publisher.h"
 
 #define N_CHECKS 2

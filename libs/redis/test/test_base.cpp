@@ -3,7 +3,7 @@
   * @file   test_base.cpp
   * @author Jonathan Taylor
   * @date   12/7/22
-  * @brief  DESCRIPTION
+  * @brief  GTests for testing redis base.
   ******************************************************************************
   * @attention
   *
@@ -14,13 +14,9 @@
   */
 
 #include <gtest/gtest.h>
-#include "../inc/base.h"
+#include "base.h"
 #include "fixtures.h"
-
-extern "C" {
-
 #include <event2/event.h>
-}
 
 bool called;
 

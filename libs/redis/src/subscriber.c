@@ -1,9 +1,9 @@
 /**
   ******************************************************************************
-  * @file   redis_subscriber.c
+  * @file   subscriber.c
   * @author Jonathan Taylor
   * @date   12/6/22
-  * @brief  DESCRIPTION
+  * @brief  Registering and handling redis subscriptions
   ******************************************************************************
   * @attention
   *
@@ -26,12 +26,14 @@ typedef struct redis_sub_t
     RedisSubscription * subs;
     size_t max_subs;
     size_t n_subs;
+
 } redis_sub_t;
 
 typedef struct redis_subscription_t
 {
     char * channel;
     r_cb_t callback;
+
 } redis_subscription_t;
 
 static inline void execute_subs(RedisSub base, char * type, bool cb);
@@ -40,10 +42,10 @@ RedisSub
 redis_sub_create(size_t max_subs)
 {
     RedisSub base = calloc(1, sizeof(redis_sub_t));
-    base->context = redis_base_create();
-    base->subs = calloc(max_subs, sizeof(redis_subscription_t));
+    base->context  = redis_base_create();
+    base->subs     = calloc(max_subs, sizeof(redis_subscription_t));
     base->max_subs = max_subs;
-    base->n_subs = 0;
+    base->n_subs   = 0;
     return base;
 }
 
@@ -51,7 +53,9 @@ void
 redis_sub_destroy(RedisSub base)
 {
     for (size_t i = 0; i < base->n_subs; i++)
+    {
         free(base->subs[i]);
+    }
     redis_base_destroy(base->context);
     free(base);
 }
@@ -71,7 +75,8 @@ redis_unsubscribe(RedisSub base)
 void
 redis_sub_add(RedisSub base, char * channel, r_cb_t callback)
 {
-    if (base->n_subs < base->max_subs) {
+    if (base->n_subs < base->max_subs)
+    {
         base->subs[base->n_subs] = calloc(1, sizeof(redis_sub_t));
         base->subs[base->n_subs]->channel  = channel;
         base->subs[base->n_subs]->callback = callback;
@@ -90,8 +95,9 @@ execute_subs(RedisSub base, char * type, bool cb)
 {
     redis_cmd_t cmd;
     cmd.command = type;
-    for (size_t i = 0; i < base->n_subs; i ++) {
-        cmd.params = base->subs[i]->channel;
+    for (size_t i = 0; i < base->n_subs; i++)
+    {
+        cmd.params   = base->subs[i]->channel;
         cmd.callback = cb ? base->subs[i]->callback : 0;
         redis_base_execute_command(base->context, &cmd);
     }
