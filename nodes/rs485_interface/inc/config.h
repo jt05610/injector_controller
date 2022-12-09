@@ -20,17 +20,6 @@
 extern "C" {
 #endif
 
-/*
- * redis config
- */
-#define HOSTNAME "127.0.0.1"
-
-#define REDIS_PORT 6379
-
-/*
- * modbus config
- */
-
 #define DEFAULT_MB_PORT "/dev/cu.usbserial-1130"
 #define DEFAULT_MB_BAUD 115200
 #define MB_PARITY 'N'
