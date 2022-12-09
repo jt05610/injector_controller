@@ -30,6 +30,11 @@ typedef struct modbus_client_t * ModbusClient;
 
 typedef struct modbus_request_t * ModbusRequest;
 
+typedef union mb_result_t * ModbusResult;
+
+typedef void(* modbus_callback_t)(
+        ModbusResult result, void * data, void * privdata);
+
 typedef enum mb_func_code_t
 {
     MB_READ_COILS     = 0x01,
@@ -48,31 +53,29 @@ typedef union mb_result_t
 
 } mb_result_t;
 
-typedef void(* modbus_callback_t)(mb_result_t * result, void * data, void * privdata);
-
 typedef struct mb_req_t
 {
     uint16_t addr;
     uint16_t nb;
-}           mb_req_t;
+
+} mb_req_t;
 
 typedef struct modbus_pdu_t
 {
     uint8_t to;
-
-    int (* handler)();
-
     void     * privdata;
     mb_req_t * mb_req;
     mb_func_code_t func_code;
-}           modbus_pdu_t;
+
+    int (* handler)();
+
+} modbus_pdu_t;
 
 typedef struct modbus_request_t
 {
     ModbusPDU         pdu;
     modbus_callback_t callback;
-}           modbus_request_t;
-
+} modbus_request_t;
 
 ModbusClient modbus_client_create(void * data);
 

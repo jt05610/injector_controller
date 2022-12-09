@@ -40,7 +40,7 @@ protected:
 };
 
 
-void mb_callback(void)
+void mb_callback(mb_result_t * result, void * data, void * privdata)
 {
     i = 0xFF;
 }
@@ -48,7 +48,7 @@ void mb_callback(void)
 TEST_F(ModbusClientTest, request)
 {
     result = mb_pdu_create(0x01, MB_READ_COILS, 0x00, 0x01, 0);
-    request = modbus_request_create(result, 0);
+    request = modbus_request_create(result, mb_callback);
     modbus_client_connect(client);
     modbus_client_request(client, request);
     ASSERT_EQ(0xFF, i);

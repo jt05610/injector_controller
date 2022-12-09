@@ -3,7 +3,7 @@
   * @file   modbus_client.c
   * @author Jonathan Taylor
   * @date   12/7/22
-  * @brief  DESCRIPTION
+  * @brief  Client library for interacting with modbus devices
   ******************************************************************************
   * @attention
   *
@@ -13,12 +13,11 @@
   ******************************************************************************
   */
 
-#include <stddef.h>
 #include <modbus.h>
 #include <stdlib.h>
 #include <printf.h>
-#include "../inc/modbus_client.h"
-#include "config.h"
+#include "modbus_client.h"
+#include "mb_config.h"
 
 
 typedef enum modbus_client_state_t
@@ -137,8 +136,6 @@ void modbus_client_connect(ModbusClient base)
     } else
     {
         base->state = MB_CONNECTED;
-        printf("connected!");
-
     }
 }
 
