@@ -14,6 +14,7 @@
   */
 
 #include <stdlib.h>
+#include <event2/event.h>
 #include "redis_client.h"
 #include "publisher.h"
 #include "subscriber.h"
@@ -66,8 +67,6 @@ redis_client_new_sub(RedisClient base, char * channel, r_cb_t callback)
 void
 redis_client_run(RedisClient base)
 {
-    redis_client_attach(base);
-    redis_subscribe(base->subscriber);
     event_base_dispatch(base->eb);
 }
 
@@ -83,4 +82,10 @@ void
 redis_client_spin_once(RedisClient base)
 {
     event_base_loop(base->eb, EVLOOP_NONBLOCK);
+}
+
+void redis_client_set_data(RedisClient base, void * data)
+{
+    redis_pub_set_data(base->publisher, data);
+    redis_sub_set_data(base->subscriber, data);
 }

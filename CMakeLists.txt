@@ -3,18 +3,14 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 
-add_link_options(-Wno-dev)
-
-add_definitions(
-    -DCMAKE_C_FLAGS_DEBUG="-g -O0"
-    -DCMAKE_CXX_FLAGS_DEBUG="-g -O0"
-)
-
 project(injector_controller C CXX)
 
 set(MB_LIB modbus_client)
 set(REDIS_NODE_LIB redis_node)
 set(SERVICE_LAYER_LIB services)
+
+set(MB_LIB_INC libs/modbus/inc)
+set(REDIS_NODE_LIB_INC libs/redis/inc)
 
 set(REDIS_TESTS RedisTests)
 set(MODBUS_TESTS ModbusTests)
@@ -24,6 +20,10 @@ include(FetchContent)
 
 include_directories(include)
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    add_definitions(
+        -DCMAKE_C_FLAGS_DEBUG="-g -O0"
+        -DCMAKE_CXX_FLAGS_DEBUG="-g -O0"
+    )
     set(BUILD_TESTS 1)
     FetchContent_Declare(
         googletest
@@ -43,6 +43,5 @@ endif()
 
 add_subdirectory(libs/modbus)
 add_subdirectory(libs/redis)
-
 add_subdirectory(nodes/rs485_interface)
 

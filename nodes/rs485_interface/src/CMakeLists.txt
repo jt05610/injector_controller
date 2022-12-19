@@ -1,15 +1,15 @@
-
-file(GLOB_RECURSE SOURCES */*.* *.*)
-add_executable(runner main.c)
-
-target_link_libraries(runner ${LIBS})
-
-file(
-    GLOB_RECURSE
-    SERVICE_LAYER_SOURCES
-    *.*
+set(
+    RS485_INT_SOURCES
+    adapters.c
+    app.c
+    handlers.c
 )
 
-add_library(${SERVICE_LAYER_LIB} ${SERVICE_LAYER_SOURCES})
+add_library(${RS485_INT_LIB} ${RS485_INT_SOURCES})
 
-target_link_libraries(${SERVICE_LAYER_LIB} ${MB_CLIENT_LIB} ${REDIS_NODE_LIB})
+target_link_libraries(${RS485_INT_LIB} ${MB_LIB} ${REDIS_NODE_LIB})
+
+add_executable(${RS485_INT_RUNNER} main.c)
+
+target_link_libraries(${RS485_INT_RUNNER} ${RS485_INT_LIB})
+

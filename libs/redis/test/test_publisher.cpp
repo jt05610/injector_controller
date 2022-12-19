@@ -14,6 +14,7 @@
   */
 
 #include <gtest/gtest.h>
+#include <event2/event.h>
 #include "publisher.h"
 #include "subscriber.h"
 

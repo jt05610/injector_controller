@@ -36,6 +36,8 @@ void redis_subscribe(RedisSub subscriber);
 
 void redis_unsubscribe(RedisSub subscriber);
 
+void redis_sub_set_data(RedisSub base, void * data);
+
 #ifdef __cplusplus
 }
 #endif

@@ -44,6 +44,8 @@ void redis_client_run(RedisClient base);
 
 void redis_client_spin_once(RedisClient base);
 
+void redis_client_set_data(RedisClient base, void * data);
+
 #ifdef __cplusplus
 }
 #endif

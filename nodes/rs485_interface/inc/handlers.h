@@ -19,10 +19,9 @@
 extern "C" {
 #endif
 
-#include "async.h"
-#include "../../../libs/redis/inc/base.h"
+#include "redis_client.h"
 
-void handle_read_coil(__attribute__((unused)) redisAsyncContext * ctx, void * reply, void * privdata);
+void handle_read_coil(redisAsyncContext * ctx, void * reply, void * privdata);
 
 void handle_read_di(redisAsyncContext * ctx, void * reply, void * privdata);
 

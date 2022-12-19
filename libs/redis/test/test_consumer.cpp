@@ -13,6 +13,7 @@
   ******************************************************************************
   */
 #include <gtest/gtest.h>
+#include <event2/event.h>
 #include "subscriber.h"
 #include "fixtures.h"
 

@@ -22,7 +22,6 @@ extern "C" {
 #endif
 
 #include "async.h"
-#include "adapters/libevent.h"
 
 typedef struct event_base * EventBase;
 
@@ -51,6 +50,10 @@ void redis_base_execute_command(RedisBase base, RedisCommand command);
 char * redis_string_concat(const char * first, const char * second);
 
 redisFD redis_base_get_fd(RedisBase base);
+
+char * extract_content(void * reply);
+
+void redis_base_set_data(RedisBase base, void * data);
 
 #ifdef __cplusplus
 }

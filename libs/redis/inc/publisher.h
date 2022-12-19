@@ -16,7 +16,6 @@
 #ifndef MODBUS_CLIENT_PUBLISHER_H
 #define MODBUS_CLIENT_PUBLISHER_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +31,8 @@ void redis_pub_attach(RedisPub base, EventBase eb);
 void redis_pub_destroy(RedisPub base);
 
 void redis_publish(RedisPub base, const char * channel, char * message);
+
+void redis_pub_set_data(RedisPub base, void * data);
 
 #ifdef __cplusplus
 }

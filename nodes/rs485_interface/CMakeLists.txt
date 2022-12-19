@@ -1,17 +1,14 @@
+set(RS485_INT_LIB rs485_interface)
+set(RS485_INT_RUNNER RunRS485Interface)
+
 include_directories(
-    /opt/homebrew/include/modbus
-    ${hiredis_SOURCE_DIR}
-    ${LIBEVENT_INC_DIR}
-)
-set(
-    LIBS
-    hiredis
-    ${MB_CLIENT_LIB}
-    ${REDIS_NODE_LIB}
-    ${SERVICE_LAYER_LIB}
-    ${LIBEVENT}
+    inc
+    ../../libs/modbus/inc
+    ../../libs/redis/inc
 )
 
-include_directories(inc)
 add_subdirectory(src)
-add_subdirectory(test)
+
+if(${BUILD_TESTS})
+    add_subdirectory(test)
+endif()

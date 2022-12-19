@@ -52,3 +52,9 @@ redis_pub_attach(RedisPub base, EventBase eb)
 {
     redis_base_attach(base->context, eb);
 }
+
+void
+redis_pub_set_data(RedisPub base, void * data)
+{
+    redis_base_set_data(base->context, data);
+}

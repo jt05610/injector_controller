@@ -18,6 +18,7 @@
 #include "hiredis.h"
 #include <stdlib.h>
 #include <string.h>
+#include "adapters/libevent.h"
 
 typedef enum redis_connection_state_t
 {
@@ -60,11 +61,19 @@ redis_base_create()
         redisAsyncFree(base->context);
         base->context = NULL;
         base = NULL;
-    } else {
+    } else
+    {
         base->context->data = base;
-        base->reply = calloc(1, sizeof(redisReply));
+        base->reply         = calloc(1, sizeof(redisReply));
     }
     return base;
+}
+
+
+void
+redis_base_set_data(RedisBase base, void * data)
+{
+    base->context->data = data;
 }
 
 redisFD
@@ -112,7 +121,7 @@ redis_base_execute_command(RedisBase base, RedisCommand command)
     char * format = redis_string_concat(command->command, format_base);
     redisAsyncCommand(
             base->context, command->callback, 0, format, command->params);
-    //free(format);
+    free(format);
 }
 
 char * redis_string_concat(const char * first, const char * second)
@@ -123,7 +132,8 @@ char * redis_string_concat(const char * first, const char * second)
     return result;
 }
 
-redisAsyncContext * redis_base_context(RedisBase base)
+redisAsyncContext *
+redis_base_context(RedisBase base)
 {
     return base->context;
 }
@@ -133,4 +143,16 @@ void redis_base_attach(RedisBase base, struct event_base * eb)
     redisLibeventAttach(base->context, eb);
     redisAsyncSetConnectCallback(base->context, app_connect);
     redisAsyncSetDisconnectCallback(base->context, app_disconnect);
+}
+
+char *
+extract_content(void * reply)
+{
+    char       * res = NULL;
+    redisReply * rpl = (redisReply *) reply;
+    if (rpl != NULL)
+    {
+        res = rpl->element[2]->str;
+    }
+    return res;
 }

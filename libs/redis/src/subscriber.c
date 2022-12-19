@@ -102,3 +102,9 @@ execute_subs(RedisSub base, char * type, bool cb)
         redis_base_execute_command(base->context, &cmd);
     }
 }
+
+void
+redis_sub_set_data(RedisSub base, void * data)
+{
+    redis_base_set_data(base->context, data);
+}

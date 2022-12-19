@@ -15,8 +15,8 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "service_layer/adapters.h"
-#include "../../../libs/redis/inc/redis_client.h"
+#include "adapters.h"
+#include "redis_client.h"
 
 ModbusRequest
 redis_to_modbus(char * msg, mb_func_code_t func_code, modbus_callback_t callback, void * callback_struct)

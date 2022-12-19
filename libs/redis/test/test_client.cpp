@@ -14,20 +14,23 @@
   */
 
 #include <gtest/gtest.h>
+#include <event2/event.h>
 #include "redis_client.h"
 #include "publisher.h"
 
 #define N_CHECKS 2
 
 static char * expects[N_CHECKS];
-static bool  passes[N_CHECKS];
+static bool passes[N_CHECKS];
 
 static RedisClient _client;
 
 static void sub_a_cb(redisAsyncContext * c, void * reply, void * privdata);
+
 static void sub_b_cb(redisAsyncContext * c, void * reply, void * privdata);
 
 static void sub_a_req_cb(redisAsyncContext * c, void * reply, void * privdata);
+
 static void sub_b_req_cb(redisAsyncContext * c, void * reply, void * privdata);
 
 class RedisClientTest : public ::testing::Test
@@ -35,11 +38,12 @@ class RedisClientTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        client = redis_client_create(2);
-        _client = client;
-        fake_sub = redis_sub_create(2);
-        fake_pub = redis_pub_create();
-        for (uint8_t i = 0; i < N_CHECKS; i ++) {
+        client         = redis_client_create(2);
+        _client        = client;
+        fake_sub       = redis_sub_create(2);
+        fake_pub       = redis_pub_create();
+        for (uint8_t i = 0; i < N_CHECKS; i++)
+        {
             passes[i] = false;
         }
         eb_watch = event_base_new();
@@ -59,7 +63,8 @@ protected:
         redis_pub_destroy(fake_pub);
         redis_sub_destroy(fake_sub);
         event_base_free(eb_watch);
-        for(uint8_t i = 0; i < N_CHECKS; i ++) {
+        for (uint8_t i = 0; i < N_CHECKS; i++)
+        {
             ASSERT_TRUE(passes[i]);
             free(expects[i]);
         }
@@ -78,9 +83,12 @@ protected:
 
     void run_loops(uint16_t n_iter)
     {
-        while (n_iter) {
+        while (n_iter)
+        {
             if (passes[0] && passes[1])
+            {
                 break;
+            }
             event_base_loop(eb_watch, EVLOOP_NONBLOCK);
             redis_client_spin_once(client);
             n_iter--;
@@ -92,32 +100,25 @@ TEST_F(RedisClientTest, e2e)
 {
     const char * chan_a = "chan_a.req";
     const char * chan_b = "chan_b.req";
-    const char * msg_a = "hello";
-    const char * msg_b = "world";
-    redis_publish(fake_pub, (char *) chan_a, (char*)msg_a);
-    redis_publish(fake_pub, (char *) chan_b, (char*)msg_b);
-    expect(0, (char *)msg_a);
-    expect(1, (char *)msg_b);
+    const char * msg_a  = "hello";
+    const char * msg_b  = "world";
+    redis_publish(fake_pub, (char *) chan_a, (char *) msg_a);
+    redis_publish(fake_pub, (char *) chan_b, (char *) msg_b);
+    expect(0, (char *) msg_a);
+    expect(1, (char *) msg_b);
     run_loops(100);
-}
-
-
-static inline char *
-extract(void * reply) {
-    char * res = NULL;
-    redisReply * rpl = (redisReply *)reply;
-    if (rpl != NULL)
-        res = rpl->element[2]->str;
-    return res;
 }
 
 static inline void
 _cb(uint8_t which, void * reply)
 {
-    char *msg = extract(reply);
-    if(msg != NULL) {
-        if(strcmp(expects[which], msg) == 0)
+    char * msg = extract_content(reply);
+    if (msg != NULL)
+    {
+        if (strcmp(expects[which], msg) == 0)
+        {
             passes[which] = true;
+        }
     }
 }
 
@@ -148,8 +149,9 @@ sub_a_req_cb(redisAsyncContext * c, void * reply, void * privdata)
 {
     (void) c;
     (void) privdata;
-    char * msg = extract(reply);
-    if(msg != NULL) {
+    char * msg = extract_content(reply);
+    if (msg != NULL)
+    {
         echo("chan_a.res", msg);
     }
 }
@@ -159,8 +161,9 @@ sub_b_req_cb(redisAsyncContext * c, void * reply, void * privdata)
 {
     (void) c;
     (void) privdata;
-    char * msg = extract(reply);
-    if(msg != NULL) {
+    char * msg = extract_content(reply);
+    if (msg != NULL)
+    {
         echo("chan_b.res", msg);
     }
 }

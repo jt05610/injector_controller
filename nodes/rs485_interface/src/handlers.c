@@ -14,10 +14,10 @@
   */
 
 #include <stdbool.h>
-#include "service_layer/handlers.h"
-#include "service_layer/adapters.h"
-#include "service_layer/app.h"
-#include "../../../libs/redis/inc/redis_client.h"
+#include "handlers.h"
+#include "adapters.h"
+#include "config.h"
+#include "app.h"
 
 typedef struct redis_cb_t * CB;
 
@@ -53,8 +53,9 @@ call(mb_result_t * result, void * callback, void * redis_client)
 }
 
 void
-handle(mb_func_code_t func_code, void * reply, void * privdata)
+handle(mb_func_code_t func_code, redisAsyncContext * ctx, void * reply)
 {
+    App base = (App)ctx->data;
     static redis_cb_t callbacks[6] = {
             {call, MB_READ_COIL_RES_CHANNEL,  true},
             {call, MB_READ_DI_RES_CHANNEL,    true},
@@ -63,64 +64,52 @@ handle(mb_func_code_t func_code, void * reply, void * privdata)
             {call, MB_WRITE_COIL_RES_CHANNEL, false},
             {call, MB_WRITE_HR_RES_CHANNEL,   false},
     };
-    redisReply * rep = (redisReply *) reply;
-
-    if (rep == NULL)
-        return;
-    if (rep->type != REDIS_REPLY_STRING)
-    {
-        return;
+    char * msg = extract_content(reply);
+    if (msg != NULL) {
+        ModbusRequest req    = redis_to_modbus(
+                msg, func_code, callbacks[func_code - 1].call, &callbacks[func_code - 1]);
+        modbus_client_request(base->mb_client, req);
     }
-    ModbusClient  client = (ModbusClient) privdata;
-    ModbusRequest req    = redis_to_modbus(
-            rep->str, func_code, callbacks[func_code - 1].call, &callbacks[func_code - 1]);
-    modbus_client_request(client, req);
 }
 
 void
-handle_read_coil(
-        __attribute__((unused)) redisAsyncContext * ctx, void * reply,
-        void * privdata)
+handle_read_coil(redisAsyncContext * ctx, void * reply, void * privdata)
 {
-    handle(MB_READ_COILS, reply, privdata);
+    (void) privdata;
+    handle(MB_READ_COILS, ctx, reply);
 }
 
 void
-handle_read_di(
-        __attribute__((unused)) redisAsyncContext * ctx, void * reply,
-        void * privdata)
+handle_read_di(redisAsyncContext * ctx, void * reply, void * privdata)
 {
-    handle(MB_READ_DI, reply, privdata);
+    (void) privdata;
+    handle(MB_READ_DI, ctx, reply);
 }
 
 void
-handle_read_hr(
-        __attribute__((unused)) redisAsyncContext * ctx, void * reply,
-        void * privdata)
+handle_read_hr(redisAsyncContext * ctx, void * reply, void * privdata)
 {
-    handle(MB_READ_HR, reply, privdata);
+    (void) privdata;
+    handle(MB_READ_HR, ctx, reply);
 }
 
 void
-handle_read_ir(
-        __attribute__((unused)) redisAsyncContext * ctx, void * reply,
-        void * privdata)
+handle_read_ir(redisAsyncContext * ctx, void * reply, void * privdata)
 {
-    handle(MB_READ_IR, reply, privdata);
+    (void) privdata;
+    handle(MB_READ_IR, ctx, reply);
 }
 
 void
-handle_write_coil(
-        __attribute__((unused)) redisAsyncContext * ctx, void * reply,
-        void * privdata)
+handle_write_coil(redisAsyncContext * ctx, void * reply, void * privdata)
 {
-    handle(MB_WRITE_COIL, reply, privdata);
+    (void) privdata;
+    handle(MB_WRITE_COIL, ctx, reply);
 }
 
 void
-handle_write_hr(
-        __attribute__((unused)) redisAsyncContext * ctx, void * reply,
-        void * privdata)
+handle_write_hr(redisAsyncContext * ctx, void * reply, void * privdata)
 {
-    handle(MB_WRITE_REGISTER, reply, privdata);
+    (void) privdata;
+    handle(MB_WRITE_REGISTER, ctx, reply);
 }
