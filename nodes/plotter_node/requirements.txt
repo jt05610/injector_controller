@@ -1,1 +1,3 @@
-redis
+redis~=4.4.0
+plotly~=5.11.0
+dash~=2.7.1
