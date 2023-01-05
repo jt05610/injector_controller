@@ -16,6 +16,7 @@
 #include <modbus.h>
 #include <stdlib.h>
 #include <printf.h>
+#include <stdbool.h>
 #include "modbus_client.h"
 #include "mb_config.h"
 
@@ -63,9 +64,10 @@ mb_pdu_create(
     return result;
 }
 
-void
+int
 modbus_client_request(ModbusClient base, ModbusRequest request)
 {
+    int ok;
     if (base->state == MB_CONNECTED)
     {
         modbus_set_slave(base->client, request->pdu->to);
@@ -78,8 +80,9 @@ modbus_client_request(ModbusClient base, ModbusRequest request)
             {
                 /*
                  * Bitwise access
+                 *
                  */
-                request->pdu->handler(
+                ok = request->pdu->handler(
                         base->client, request->pdu->mb_req->addr,
                         request->pdu->mb_req->nb, base->result->small);
             } else
@@ -87,7 +90,7 @@ modbus_client_request(ModbusClient base, ModbusRequest request)
                 /*
                  * Register access
                  */
-                request->pdu->handler(
+                ok = request->pdu->handler(
                         base->client, request->pdu->mb_req->addr,
                         request->pdu->mb_req->nb, base->result->big);
             }
@@ -97,20 +100,22 @@ modbus_client_request(ModbusClient base, ModbusRequest request)
             /*
             * write functions
             */
-            int ok = request->pdu->handler(
+            ok = request->pdu->handler(
                     base->client, request->pdu->mb_req->addr,
                     request->pdu->mb_req->nb);
             base->result->small[0] = (ok == 1) ? 1 : 0;
         }
         request->callback(base->result, request->pdu->privdata, base->data);
+    } else {
+        ok = -1;
     }
+    return ok;
 }
 
 ModbusClient
 modbus_client_create(void * data)
 {
     ModbusClient base = calloc(1, sizeof(modbus_client_t));
-
     base->baud   = DEFAULT_MB_BAUD;
     base->device = DEFAULT_MB_PORT;
     base->data   = data;
@@ -121,6 +126,7 @@ modbus_client_create(void * data)
             MB_DATA_BIT,
             MB_STOP_BIT
     );
+    modbus_set_debug(base->client, TRUE);
     base->state  = MB_IDLE;
     modbus_set_response_timeout(base->client, MB_TIMEOUT_S, MB_TIMEOUT_US);
     base->result = calloc(RESULT_BUFFER_SIZE, sizeof(mb_result_t));

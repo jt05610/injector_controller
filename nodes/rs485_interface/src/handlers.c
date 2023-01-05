@@ -59,9 +59,9 @@ handle(mb_func_code_t func_code, redisAsyncContext * ctx, void * reply)
     static redis_cb_t callbacks[6] = {
             {call, MB_READ_COIL_RES_CHANNEL,  true},
             {call, MB_READ_DI_RES_CHANNEL,    true},
-            {call, MB_READ_HR_RES_CHANNEL,    true},
-            {call, MB_READ_IR_RES_CHANNEL,    true},
-            {call, MB_WRITE_COIL_RES_CHANNEL, false},
+            {call, MB_READ_HR_RES_CHANNEL,    false},
+            {call, MB_READ_IR_RES_CHANNEL,    false},
+            {call, MB_WRITE_COIL_RES_CHANNEL, true},
             {call, MB_WRITE_HR_RES_CHANNEL,   false},
     };
     char * msg = extract_content(reply);

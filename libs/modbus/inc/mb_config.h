@@ -20,11 +20,11 @@
 extern "C" {
 #endif
 
-#define DEFAULT_MB_PORT "/dev/cu.usbserial-1140"
+#define DEFAULT_MB_PORT "/dev/cu.usbserial-1120"
 #define DEFAULT_MB_BAUD 115200
 #define MB_PARITY 'N'
 #define MB_DATA_BIT 8
-#define MB_STOP_BIT 2
+#define MB_STOP_BIT 1
 #define MB_TIMEOUT_S 0
 #define MB_TIMEOUT_US 200000
 

@@ -97,7 +97,7 @@ void modbus_client_disconnect(ModbusClient base);
 
 void modbus_client_set_device(ModbusClient base, char * device);
 
-void modbus_client_request(ModbusClient base, ModbusRequest request);
+int modbus_client_request(ModbusClient base, ModbusRequest request);
 
 #ifdef __cplusplus
 }
