@@ -21,10 +21,10 @@ class WriteTable(Command):
 @dataclass
 class CreateDataModel(Command):
     ref: str
-    discrete_inputs: Iterable[str, ...]
-    coils: Iterable[str, ...]
-    input_registers: Iterable[str, ...]
-    holding_registers: Iterable[str, ...]
+    discrete_inputs: Iterable[str]
+    coils: Iterable[str]
+    input_registers: Iterable[str]
+    holding_registers: Iterable[str]
 
 
 @dataclass
