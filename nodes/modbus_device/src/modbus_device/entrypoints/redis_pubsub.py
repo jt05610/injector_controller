@@ -6,5 +6,3 @@ class RedisPubsub:
     def __init__(self, publisher: RedisPublisher, subscriber: RedisSubscriber):
         self.publisher = publisher
         self.subscriber = subscriber
-
-
