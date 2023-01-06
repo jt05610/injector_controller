@@ -8,14 +8,33 @@ class Command:
 
 @dataclass
 class ReadTable(Command):
+    device_ref: str
     table: str
-    pdu: str
+    endpoint: str
 
 
 @dataclass
 class WriteTable(Command):
+    device_ref: str
     table: str
-    pdu: str
+    endpoint: str
+    value: int
+
+
+@dataclass
+class ProcessTableReadResponse(Command):
+    node_address: int
+    table: str
+    table_address: int
+    value: int
+
+
+@dataclass
+class ProcessTableWriteResponse(Command):
+    node_address: int
+    table: str
+    table_address: int
+    value: int
 
 
 @dataclass
