@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple, Optional, Union, Iterable
 
 from modbus_device.domain import exceptions
+from pydantic import BaseModel
 
 
 @dataclass(frozen=True)
