@@ -17,7 +17,7 @@ class FakeRepository(repository.AbstractRepository):
     def _add(self, item: Any):
         self._items.append(item)
 
-    def _get(self, **kwargs):
+    def _get_one(self, **kwargs):
         key, value = kwargs.popitem()
         return next((i for i in self._items if getattr(i, key) == value), None)
 
@@ -46,71 +46,21 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 class FakeRedisServicePublisher(redis_eventpublisher.RedisServicePublisher):
     def __init__(self, *channels):
         self.client = FakeRedis()
-        self.channel = channels
-        super().__init__(client=self.client)
-        self.pubsub = self.client.pubsub(ignore_subscribe_messages=True)
-        self.pubsub.subscribe(*self.channel)
-
-    def get_message(self):
-        return next(self.pubsub.listen())
+        super().__init__(client=self.client, *channels)
 
 
 def bootstrap_test_app(publisher: FakeRedisServicePublisher):
     return bootstrap.bootstrap(uow=FakeUnitOfWork(), publisher=publisher)
 
 
-def create_data_model(bus: MessageBus, ref: str):
-    bus.handle(
-        commands.CreateDataModel(
-            ref=ref,
-            discrete_inputs=("a", "b"),
-            coils=("c", "d"),
-            input_registers=("e", "f"),
-            holding_registers=("g", "h"),
-        )
-    )
-
-
-def create_device(bus: MessageBus, ref: str, node_address: int):
-    create_data_model(bus, "abc")
-    bus.handle(
-        commands.CreateDevice(
-            ref=ref, address=node_address, data_model_ref="abc"
-        )
-    )
-
-
-def test_create_data_model():
-    fake_service = FakeRedisServicePublisher("device.create_data_model.res")
-    bus = bootstrap_test_app(fake_service)
-    ref = "abc"
-    create_data_model(bus, ref)
-    msg = fake_service.get_message()
-    assert json.loads(msg["data"]) == dict(ref=ref)
-
-
-def test_create_device():
-    fake_service = FakeRedisServicePublisher("device.create_device.res")
-    bus = bootstrap_test_app(fake_service)
-    ref = "fake_device"
-    addr = 0x01
-    expected = {"ref": ref, "device_channel": f"device.{ref}"}
-    create_device(bus, ref, addr)
-    msg = fake_service.get_message()
-    assert json.loads(msg["data"]) == expected
-
-
 def test_read_table():
     fake_service = FakeRedisServicePublisher("modbus.coils.read.req")
     bus = bootstrap_test_app(fake_service)
-    ref = "fake_device"
-    addr = 0xFF
-    create_device(bus, ref, addr)
     bus.handle(
         commands.ReadTable(
-            device_ref=ref,
+            node_address=0xFF,
             table="coils",
-            endpoint="c",
+            address=0,
         )
     )
     msg = fake_service.get_message()
@@ -122,7 +72,6 @@ def test_write_table():
     bus = bootstrap_test_app(fake_service)
     ref = "fake_device"
     addr = 0xFF
-    create_device(bus, ref, addr)
     bus.handle(
         commands.WriteTable(
             device_ref=ref, table="coils", endpoint="c", value=1

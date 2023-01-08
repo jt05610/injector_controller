@@ -8,6 +8,4 @@ DB_NAME = "devices"
 
 app = FastAPI()
 
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DB_CONN_STRING)
-
-schema.map_routers(app, client, DB_NAME)
+schema.map_routers(app, DB_NAME)

@@ -1,22 +1,16 @@
 import logging
 
-import redis
+import aioredis
 from modbus_device import config
-from modbus_device.domain import commands
 
 
 class RedisPublisher:
-    namespace: str
+    logger = logging.getLogger(__name__)
+    client: aioredis.Redis
 
-    def __init__(
-        self, client: redis.Redis = redis.Redis(**config.REDIS_DEFAULT)
-    ):
-        self.logger = logging.getLogger(__name__)
-        self.client = client
-
-    def publish(self, channel: str, message: str):
-        self.logger.info(f"publishing {message} on {channel}")
-        self.client.publish(channel, message)
+    async def publish(self, channel: str, message: str):
+        self.logger.debug(f"publishing {message} to {channel}")
+        await self.client.publish(channel, message)
 
 
 class RedisServicePublisher(RedisPublisher):
@@ -24,17 +18,29 @@ class RedisServicePublisher(RedisPublisher):
 
     def __init__(
         self,
-        client: redis.Redis = redis.Redis(**config.REDIS_DEFAULT),
+        *sub_channels,
+        client: aioredis.Redis = aioredis.Redis(),
         namespace: str = config.REDIS_NAMESPACE,
     ):
-        super().__init__(client)
+        if len(sub_channels):
+            self.channels = sub_channels
+        else:
+            self.channels = [
+                f"{namespace}.coils.read.res",
+                f"{namespace}.discrete_inputs.read.res",
+                f"{namespace}.input_registers.read.res",
+                f"{namespace}.holding_registers.read.res",
+                f"{namespace}.coils.write.res",
+                f"{namespace}.holding_registers.write.res",
+            ]
+        self.client = client
+        self.pubsub = self.client.pubsub(ignore_subscribe_messages=True)
         self.namespace = namespace
 
-    def publish_request(self, channel: str, message: str):
-        full_channel = ".".join(("modbus", channel, "req"))
+    async def publish_request(self, channel: str, message: str):
+        full_channel = ".".join((self.namespace, channel, "req"))
+        await self.publish(channel=full_channel, message=message)
 
-        self.publish(channel=full_channel, message=message)
-
-    def publish_response(self, channel: str, message: str):
+    async def publish_response(self, channel: str, message: str):
         full_channel = ".".join((self.namespace, channel, "res"))
-        self.publish(channel=full_channel, message=message)
+        await self.publish(channel=full_channel, message=message)

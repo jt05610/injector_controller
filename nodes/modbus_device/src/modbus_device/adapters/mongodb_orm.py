@@ -1,5 +1,6 @@
 from typing import Type, Optional, Union, List, Any, Callable, Coroutine
 
+from bson import ObjectId
 from fastapi.encoders import jsonable_encoder
 from fastapi_crudrouter.core import CRUDGenerator, NOT_FOUND
 from fastapi_crudrouter.core._types import (
@@ -8,10 +9,9 @@ from fastapi_crudrouter.core._types import (
     PAGINATION,
 )
 
-from pydantic import BaseModel
-
-CALLABLE = Callable[..., Coroutine[Any, Any, BaseModel]]
-CALLABLE_LIST = Callable[..., Coroutine[Any, Any, List[BaseModel]]]
+from modbus_device.adapters.repository import MongoDBRepository
+CALLABLE = Callable[..., Coroutine[Any, Any, PYDANTIC_SCHEMA]]
+CALLABLE_LIST = Callable[..., Coroutine[Any, Any, List[PYDANTIC_SCHEMA]]]
 
 
 class MongoDBCRUDRouter(CRUDGenerator[PYDANTIC_SCHEMA]):
@@ -35,6 +35,7 @@ class MongoDBCRUDRouter(CRUDGenerator[PYDANTIC_SCHEMA]):
     ) -> None:
         self.db = db
         self.tbl = collection
+        self.repo = MongoDBRepository(self.db[self.tbl], schema)
 
         super().__init__(
             schema=schema,
@@ -55,19 +56,15 @@ class MongoDBCRUDRouter(CRUDGenerator[PYDANTIC_SCHEMA]):
     def _get_all(self, *args: Any, **kwargs: Any) -> CALLABLE_LIST:
         async def route(
             pagination: PAGINATION = self.pagination,
-        ) -> List[BaseModel]:
+        ) -> List[PYDANTIC_SCHEMA]:
             skip, limit = pagination.get("skip"), pagination.get("limit")
-            items: List[BaseModel] = (
-                await self.db[self.tbl].find().to_list(limit)
-            )
-            return items
-
+            return await self.repo.get_all(skip=skip, limit=limit)
         return route
 
     def _get_one(self, *args: Any, **kwargs: Any) -> CALLABLE:
-        async def route(item_id: int) -> PYDANTIC_SCHEMA:
-            item = await self.db[self.tbl].find_one({"_id": item_id})
-            if item:
+        async def route(item_id: str) -> PYDANTIC_SCHEMA:
+            item = await self.repo.get_one(item_id=item_id)
+            if item is not None:
                 return item
             else:
                 raise NOT_FOUND
@@ -77,43 +74,32 @@ class MongoDBCRUDRouter(CRUDGenerator[PYDANTIC_SCHEMA]):
     def _create(self, *args: Any, **kwargs: Any) -> CALLABLE:
         async def route(
             model: self.create_schema,  # type: ignore
-        ) -> BaseModel:
-            item = jsonable_encoder(model)
-            new_item = await self.db[self.tbl].insert_one(item)
-            created_item = await self.db[self.tbl].find_one(
-                {"_id": new_item.inserted_id}
-            )
-            return created_item
+        ) -> PYDANTIC_SCHEMA:
+            _model = jsonable_encoder(model)
+            return await self.repo.insert(_model)
 
         return route
 
     def _update(self, *args: Any, **kwargs: Any) -> CALLABLE:
         async def route(
-            item_id: int, model: self.update_schema  # type: ignore
+            item_id: str, model: self.update_schema  # type: ignore
         ) -> PYDANTIC_SCHEMA:
-            item = {k: v for k, v in model.dict().items() if v is not None}
-            if len(item) >= 1:
-                update_result = await self.db[self.tbl].update_one(
-                    {"_id": item_id}, {"$set": item}
-                )
-
-                if update_result.modified_count == 1:
-                    return await self.db[self.tbl].find_one({"_id": item_id})
-
-                return await self.db[self.tbl].find_one({"_id": item_id})
-
+            update = {k: v for k, v in model.dict().items() if v is not None}
+            if len(update):
+                _model = await self.repo.get_one(item_id=item_id)
+                return await self.repo.update(_model, **update)
             raise NOT_FOUND
 
         return route
 
     def _delete_all(self, *args: Any, **kwargs: Any) -> CALLABLE_LIST:
         async def route() -> List[PYDANTIC_SCHEMA]:
-            return await self.db[self.tbl].delete()
+            await self.repo.delete_all()
+            return await self._get_all()(pagination={"skip": 0, "limit": None})
 
         return route
 
     def _delete_one(self, *args: Any, **kwargs: Any) -> CALLABLE:
-        async def route(item_id: int) -> PYDANTIC_SCHEMA:
-            return await self.db[self.tbl].delete_one({"_id": item_id})
-
+        async def route(item_id: str) -> PYDANTIC_SCHEMA:
+            return await self.repo.delete_one(item_id=item_id)
         return route

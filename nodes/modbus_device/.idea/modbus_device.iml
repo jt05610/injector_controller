@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4">
   <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+    </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (plotter_node)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PyNamespacePackagesService">
+    <option name="namespacePackageFolders">
+      <list>
+        <option value="$MODULE_DIR$/src/modbus_device" />
+        <option value="$MODULE_DIR$/src/modbus_device/adapters" />
+        <option value="$MODULE_DIR$/src/modbus_device/entrypoints" />
+        <option value="$MODULE_DIR$/src/modbus_device/domain" />
+        <option value="$MODULE_DIR$/src/modbus_device/service_layer" />
+      </list>
+    </option>
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="py.test" />

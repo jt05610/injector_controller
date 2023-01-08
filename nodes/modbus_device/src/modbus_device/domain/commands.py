@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Iterable
 
 
 class Command:
@@ -8,46 +7,15 @@ class Command:
 
 @dataclass
 class ReadTable(Command):
-    device_ref: str
+    node_address: int
     table: str
-    endpoint: str
+    address: int
+    num: int = 1
 
 
 @dataclass
 class WriteTable(Command):
-    device_ref: str
+    node_address: str
     table: str
-    endpoint: str
-    value: int
-
-
-@dataclass
-class ProcessTableReadResponse(Command):
-    node_address: int
-    table: str
-    table_address: int
-    value: int
-
-
-@dataclass
-class ProcessTableWriteResponse(Command):
-    node_address: int
-    table: str
-    table_address: int
-    value: int
-
-
-@dataclass
-class CreateDataModel(Command):
-    ref: str
-    discrete_inputs: Iterable[str]
-    coils: Iterable[str]
-    input_registers: Iterable[str]
-    holding_registers: Iterable[str]
-
-
-@dataclass
-class CreateDevice(Command):
-    ref: str
     address: int
-    data_model_ref: str
+    value: int

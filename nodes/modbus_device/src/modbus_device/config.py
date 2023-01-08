@@ -1,6 +1,6 @@
-REDIS_DEFAULT = {"host": "127.0.0.1", "port": 6379}
+REDIS_DEFAULT = "redis://localhost:6379/"
 
-REDIS_NAMESPACE = "device"
+REDIS_NAMESPACE = "modbus"
 
 REDIS_DELIM = "."
 
